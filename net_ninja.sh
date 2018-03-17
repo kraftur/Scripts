@@ -8,8 +8,6 @@
 
 VERSION="1.0"
 
-# TODO: Make output easier to read
-
 # TODO: Make all scans automated by configuring the scans at the start
 
 # TODO: Version and Scripts Scan from Full TCP results.
@@ -18,12 +16,16 @@ VERSION="1.0"
 
 # TODO: Print Scan Results
 
-# NOTES
-#===============================================================================================================
+# User Scan config options
+##########################
+# Turn on/off nmap scan options - Default setting is 
+#=======================================================================
 
+FULLTCP="off" # to disable/enable Full TCP Scan set to "off" / "on"
+TOPUDP="on"  # to disable/enable Top UDP Scan (1000) set to "off" / "on"
+TOPTCP="on"  # to disable/enable Top TCP Scan (1000) set to "off" / "on"
 
-#===============================================================================================================
-
+#=======================================================================
 # Script Starts
 
 clear
@@ -135,14 +137,14 @@ echo "$REF" > REF
 echo "$INT" > INT
 echo ""
 echo -e "\e[01;31m======================================================\e[00m"
-echo -e "\e[01;31m[?]\e00m Do you want to exclude any IPs from the scan?"
+echo -e "\e[01;31m[?]\e[00m Do you want to exclude any IPs from the scan?"
 echo -e "\e[01;31m======================================================\e[00m"
 echo ""
 echo -e "\e[01;32m[-]\e[00m NOTE - Your source IP address of "$LOCAL" will be excluded from the scan"
 echo ""
--e "\e[01;31m=============================================\e[00m"
-echo -e "\e[01;31m[?]\e00m Enter yes or no and press ENTER"
--e "\e[01;31m=============================================\e[00m"
+echo -e "\e[01;31m=============================================\e[00m"
+echo -e "\e[01;31m[?]\e[00m Enter yes or no and press ENTER"
+echo -e "\e[01;31m=============================================\e[00m"
 echo ""
 read EXCLUDEANS
 
@@ -275,7 +277,7 @@ echo -e "\e[01;32m=============================================================\
 HOSTSUP=$(cat "$REF"_hosts_Up.txt)
 echo -e "\e[01;32m$HOSTSUP\e[00m"
 echo ""
-echo -e "\e[01;32m[-]\e[00m Press Enter to perform a full scan of the hosts, or CTRL C to cancel"
+echo -e "\e[01;32m[-]\e[00m Press Enter to perform the scans selected, or CTRL C to cancel"
 read ENTER
 
 '''Port Scans - 
@@ -284,13 +286,14 @@ Fast UDP,
 Version and Scripts Scan on Full TCP results,
 Full UDP - Option
 '''
-
-# TCP and UDP Scans
+#===================
+## TCP and UDP Scans
+#===================
 
 if [ $FULLTCP = "on" ]
 then
-# Full TCP Port Scan
-gnome-terminal --title="$REF - Full TCP Port Scan - $INT" -x bash -c 'REF=$(cat REF);INT=$(cat INT);EXCLUDE=$(cat excludeiplist); echo "" ; echo "" ; echo -e "\e[01;32m[-]\e[00m Starting Full TCP Scan " ; echo "" ; nmap -e $INT -sS $EXCLUDE -Pn -T4 -p- -n -vvv -oA "$REF"_nmap_FullPorts -iL "$REF"_hosts_Up.txt ; echo  -e "\e[01;32m[+]\e[00m ----- Full TCP Port Scan Complete. Press ENTER to Exit" ; echo "" ; read ENTERKEY ;'
+    # Full TCP Port Scan
+gnome-terminal --title="$REF - Full TCP Port Scan - $INT" -x bash -c 'REF=$(cat REF);INT=$(cat INT);EXCLUDE=$(cat excludeiplist); echo "" ; echo "" ; echo -e "\e[01;32m[-]\e[00m Starting Full TCP Scan " ; echo "" ; nmap -e $INT -sS $EXCLUDE -Pn -T4 -p- -n -vvv -oA "$REF"_nmap_Full_TCP_Ports -iL "$REF"_hosts_Up.txt ; echo  -e "\e[01;32m[+]\e[00m ----- Full TCP Port Scan Complete. Press ENTER to Exit" ; echo "" ; read ENTERKEY ;'
 else
 echo ""
 echo -e "\e[01;33m[-]\e[00m Skipping Full TCP Port Scan as it's turned off in the options"
@@ -298,8 +301,8 @@ fi
 
 if [ $TOPUDP = "on" ]
 then
-i# Top UDP Port Scan
-gnome-terminal --title="$REF - Fast UDP Scan - $INT" -x bash -c 'REF=$(cat REF);INT=$(cat INT);EXCLUDE=$(cat excludeiplist); echo "" ; echo "" ; echo -e "\e[01;32m[-]\e[00m Starting Fast UDP Scan - Scanning Top (1,000) Ports " ; echo "" ; sleep 3 ; nmap -e $INT -sU $EXCLUDE -Pn -T4 --top-ports 1000 -n -vvv -oA "$REF"_nmap_Fast_UDP -iL "$REF"_hosts_Up.txt 2>/dev/null ; echo "" ; echo  -e "\e[01;32m[+]\e[00m $REF - Fast UDP Scan Complete. Press ENTER to Exit" ; echo "" ; read ENTERKEY ;'
+    # Top UDP Port Scan (1000)
+gnome-terminal --title="$REF - Top UDP Scan - $INT" -x bash -c 'REF=$(cat REF);INT=$(cat INT);EXCLUDE=$(cat excludeiplist); echo "" ; echo "" ; echo -e "\e[01;32m[-]\e[00m Starting Top UDP Scan - Scanning Top (1,000) Ports " ; echo "" ; sleep 3 ; nmap -e $INT -sU $EXCLUDE -Pn -T4 --top-ports 1000 -n -vvv --max-retries 1 --version-intensity 0 --max-scan-delay 10 -oA "$REF"_nmap_Top_1k_UDP -iL "$REF"_hosts_Up.txt 2>/dev/null ; echo "" ; echo  -e "\e[01;32m[+]\e[00m $REF - Top UDP Scan Complete. Press ENTER to Exit" ; echo "" ; read ENTERKEY ;'
 else
     echo ""
     echo -e "\e[01;33m[-]\e[00m Skipping Top UDP Scan as it's turned off in the options"
@@ -307,7 +310,7 @@ fi
 
 if [ $TOPTCP = "on" ]
 then
-# Top 1000 TCP Port Scan
+    # Top TCP Port Scan (1000)
 gnome-terminal --title="$REF - Top 1,000 TCP Scan - $INT" -x bash -c 'REF=$(cat REF);INT=$(cat INT);EXCLUDE=$(cat excludeiplist); echo "" ; echo "" ; echo -e "\e[01;32m[-]\e[00m Starting Top 1,000 TCP Scan" ; echo "" ; sleep 3 ; nmap -e $INT -sS $EXCLUDE -Pn -T4 --top-ports 1000 -n -vvv -oA "$REF"_nmap_Top_1k_TCP -iL "$REF"_hosts_Up.txt 2>/dev/null ; echo "" ; echo -e "\e[01;32m[+]\e[00m $REF - Top 1,000 TCP Scan Complete. Press ENTER to Exit" ; echo "" ; read ENTERKEY ;'
 else
     echo ""
@@ -318,6 +321,10 @@ fi
 sleep 5
 rm "INT" 2>/dev/null
 rm "REF" 2>/dev/null
+
+#============
+## Scan Times
+#============
 
 clear
 echo ""
@@ -332,13 +339,15 @@ echo ""
 
 PINGTIMESTART=`cat "$REF"_nmap_PingScan.nmap 2>/dev/null | grep -i "scan initiated" | awk '{print $6, $7, $8, $9, $10}'`
 PINGTIMESTOP=`cat "$REF"_nmap_PingScan.nmap 2>/dev/null | grep -i "nmap done" | awk '{print $5, $6, $7, $8, $9}'`
-FULLTCPTIMESTART=`cat "$REF"_nmap_FullPorts.nmap 2>/dev/null | grep -i "scan initiated" | awk '{print $6, $7, $8, $9, $10}'`
-FULLTCPTIMESTOP=`cat "$REF"_nmap_FullPorts.nmap 2>/dev/null | grep -i "nmap done" | awk '{print $5, $6, $7, $8, $9}'`
-FASTUDPTIMESTART=`cat "$REF"_nmap_Fast_UDP.nmap 2>/dev/null | grep -i "scan initiated" | awk '{print $6, $7, $8, $9, $10}'`
-FASTUDPTIMESTOP=`cat "$REF"_nmap_Fast_UDP.nmap 2>/dev/null | grep -i "nmap done" | awk '{print $5, $6, $7, $8, $9}'`
+TOPTCPTIMESTART=`cat "$REF"_nmap_Top_1k_TCP.nmap 2>/dev/null | grep -i "scan initiated" | awk '{print $6, $7, $8, $9, $10}'`
+TOPTCPTIMESTOP=`cat "$REF"_nmap_Top_1k_TCP.nmap 2>/dev/null | grep -i "nmap done" | awk '{print $5, $6, $7, $8, $9}'`
+TOPUDPTIMESTART=`cat "$REF"_nmap_Top_1k_UDP.nmap 2>/dev/null | grep -i "scan initiated" | awk '{print $6, $7, $8, $9, $10}'`
+TOPUDPTIMESTOP=`cat "$REF"_nmap_Top_1k_UDP.nmap 2>/dev/null | grep -i "nmap done" | awk '{print $5, $6, $7, $8, $9}'`
+FULLTCPTIMESTART=`cat "$REF"_nmap_Full_TCP_Ports.nmap 2>/dev/null | grep -i "scan initiated" | awk '{print $6, $7, $8, $9, $10}'`
+FULLTCPTIMESTOP=`cat "$REF"_nmap_Full_TCP_Ports.nmap 2>/dev/null | grep -i "nmap done" | awk '{print $5, $6, $7, $8, $9}'`
 
 if [ -z "$PINGTIMESTOP" ]
-    then
+then
         echo ""
         echo "" >> "$REF"_nmap_scan_times.txt
         echo -e "\e[01;31m[!]\e[00m Ping sweep started $PINGTIMESTART\e[00m - \e[01;31mscan did not complete or was interrupted!"
@@ -349,30 +358,48 @@ if [ -z "$PINGTIMESTOP" ]
         echo -e "\e[01;32m[+]\e[00m Ping sweep started $PINGTIMESTART\e[00m - \e[00;32mfinished successfully $PINGTIMESTOP"
         echo " Ping sweep started $PINGTIMESTART - finished successfully $PINGTIMESTOP" >> "$REF"_nmap_scan_times.txt
 fi
+if [ -z "$TOPTCPTIMESTOP" ]
+    then
+        echo ""
+        echo "" >> "$REF"_nmap_scan_times.txt
+        echo -e "\e[01;31m[!]\e[00m Full TCP Port Scan started $TOPTCPTIMESTART\e[00m - \e[01;31mscan did not complete of was interupted!"
+        echo " Full TCP Port Scan started $TOPTCPTIMESTART - scan did not complete of was interupted!" >> "$REF"_nmap_scan_times.txt
+    else
+        echo ""
+        echo "" >> "$REF"_nmap_scan_times.txt
+        echo -e "\e[01;32m[+]\e[00m Full TCP Port Scan started $TOPTCPTIMESTART\e[00m - \e[00;32mfinished successfully $TOPTCPTIMESTOP"
+        echo " Full TCP Port Scan started $TOPTCPTIMESTART - finished successfully $TOPTCPTIMESTOP" >> "$REF"_nmap_scan_times.txt
+fi
+if [ -z "$TOPTUDPTIMESTOP" ]
+    then
+        echo ""
+        echo "" >> "$REF"_nmap_scan_times.txt
+        echo -e "\e[01;31m[!]\e[00m Fast UDP Port Scan started $TOPUDPTIMESTART\e[00m - \e[01;31mscan did not complete of was interupted!"
+        echo " Fast UDP Port Scan started $TOPUDPTIMESTART - scan did not complete of was interupted!" >> "$REF"_nmap_scan_times.txt
+    else
+        echo ""
+        echo "" >> "$REF"_nmap_scan_times.txt
+        echo -e "\e[01;32m[+]\e[00m Fast UDP Port Scan started $TOPUDPTIMESTART\e[00m - \e[00;32mfinished successfully $TOPUDPTIMESTOP"
+        echo " Fast UDP Port Scan started $TOPUDPTIMESTART - finished successfully $TOPUDPTIMESTOP" >> "$REF"_nmap_scan_times.txt
+fi
 if [ -z "$FULLTCPTIMESTOP" ]
     then
         echo ""
         echo "" >> "$REF"_nmap_scan_times.txt
         echo -e "\e[01;31m[!]\e[00m Full TCP Port Scan started $FULLTCPTIMESTART\e[00m - \e[01;31mscan did not complete of was interupted!"
-        echo " Full TCP Port Scan started $FULLTCPTIMESTART - scan did not complete of was interupted!" >> "$REF"_nmap_scan_times.txt
+        echo " FULL TCP Port Scan started $FULLTCPTIMESTART - scan did not complete of was interupted!" >> "$REF"_nmap_scan_times.txt
     else
         echo ""
         echo "" >> "$REF"_nmap_scan_times.txt
         echo -e "\e[01;32m[+]\e[00m Full TCP Port Scan started $FULLTCPTIMESTART\e[00m - \e[00;32mfinished successfully $FULLTCPTIMESTOP"
-        echo " Full TCP Port Scan started $FULLTCPTIMESTART - finished successfully $FULLTCPTIMESTOP" >> "$REF"_nmap_scan_times.txt
+        echo " Fast UDP Port Scan started $FULLTCPTIMESTART - finished successfully $FULLTCPTIMESTOP" >> "$REF"_nmap_scan_times.txt
 fi
-if [ -z "$FASTUDPTIMESTOP" ]
-    then
-        echo ""
-        echo "" >> "$REF"_nmap_scan_times.txt
-        echo -e "\e[01;31m[!]\e[00m Fast UDP Port Scan started $FASTUDPTIMESTART\e[00m - \e[01;31mscan did not complete of was interupted!"
-        echo " Fast UDP Port Scan started $FASTUDPTIMESTART - scan did not complete of was interupted!" >> "$REF"_nmap_scan_times.txt
-    else
-        echo ""
-        echo "" >> "$REF"_nmap_scan_times.txt
-        echo -e "\e[01;32m[+]\e[00m Fast UDP Port Scan started $FASTUDPTIMESTART\e[00m - \e[00;32mfinished successfully $FASTUDPTIMESTOP"
-        echo " Fast UDP Port Scan started $FASTUDPTIMESTART - finished successfully $FASTUDPTIMESTOP" >> "$REF"_nmap_scan_times.txt
-fi
+
+
+#=================================
+## TCP and UPD Open Ports Summary
+#=================================
+
 echo ""
 echo -e "\e[01;32m===============================================\e[00m"
 echo -e "\e[01;32m[+]\e[00m TCP and UDP Open Ports Summary - $REF"
