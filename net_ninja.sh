@@ -312,7 +312,7 @@ fi
 if [ $TOPTCP = "on" ]
 then
     # Top TCP Port Scan (1000)
-gnome-terminal --title="$REF - Top 1,000 TCP Scan - $INT" -x bash -c 'REF=$(cat REF);INT=$(cat INT);EXCLUDE=$(cat excludeiplist); echo "" ; echo "" ; echo -e "\e[01;32m[-]\e[00m Starting Top 1,000 TCP Scan" ; echo "" ; sleep 3 ; nmap -e $INT -sS $EXCLUDE -Pn -T4 --top-ports 1000 -n -vvv -oA "$REF"_nmap_Top_1k_TCP -iL "$REF"_hosts_Up.txt 2>/dev/null ; echo "" ; echo -e "\e[01;32m[+]\e[00m $REF - Top 1,000 TCP Scan Complete. Press ENTER to Exit" ; echo "" ; read ENTERKEY ;'
+gnome-terminal --title="$REF - Top 1,000 TCP Scan - $INT" -x bash -c 'REF=$(cat REF);INT=$(cat INT);EXCLUDE=$(cat excludeiplist); echo "" ; echo "" ; echo -e "\e[01;32m[-]\e[00m Starting Top 1,000 TCP Scan" ; echo "" ; sleep 3 ; nmap -e $INT -sS $EXCLUDE -Pn -T4 --top-ports 1000 -n -vvv -oA "$REF"_nmap_Top_1k_TCP -iL "$REF"_hosts_Up.txt 2>/dev/null ; echo "" ; echo -e "\e[01;32m[+]\e[00m $REF - Top TCP Scan Complete. Press ENTER to Exit" ; echo "" ; read ENTERKEY ;'
 else
     echo ""
     echo -e "\e[01;33m[-]\e[00m Skipping Top TCP Scan as it's turned off in the options"
